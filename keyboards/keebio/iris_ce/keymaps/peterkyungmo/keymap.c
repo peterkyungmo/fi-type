@@ -1,14 +1,12 @@
 // Copyright 2023 Danny Nguyen (@nooges)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-uint32_t keystroke_counter = 30;
-const char key_list[] = {KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L};
-int key_list_size = sizeof(key_list) / sizeof(key_list[0]);
+
 
 bool spam_active = false;
 uint32_t keystroke_timer = 0;
 uint32_t keystroke_delay = 29;
-uint32_t keystroke_counter = l
+uint32_t keystroke_counter = 20;
 uint32_t spam_timer = 0;
 uint32_t spam_delay = 3000;
 
@@ -18,6 +16,9 @@ uint32_t spam_delay = 3000;
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+const char key_list[] = {KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN};
+int key_list_size = sizeof(key_list) / sizeof(key_list[0]);
 
 enum my_keycodes {
    CODE = SAFE_RANGE,
@@ -81,6 +82,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed) {
         spam_active = !spam_active;  // Toggle spamming
         keystroke_timer = timer_read32(); // Reset spam timer
+        keystroke_delay = rand() % 50 + 1;
+        keystroke_counter = rand() % (30 - 10 + 1) + 10;
         srand(time(NULL));
       }
       break;
@@ -93,7 +96,7 @@ void matrix_scan_user(void){
   if (spam_active) {
     // Check if it's been SPAM_DELAY milliseconds since the last spam
     if (timer_elapsed32(keystroke_timer) > keystroke_delay) {
-      tap_code(KC_COMM);           // Send an F2 keystroke
+      tap_code(key_list[rand() % key_list_size]);           // Send a random keystroke
       keystroke_timer = timer_read32();  // Reset spam timer
       keystroke_delay = rand() % 50 + 1; // Seed new keystroke_delay
     }
